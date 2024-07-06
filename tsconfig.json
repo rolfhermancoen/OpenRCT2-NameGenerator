@@ -19,6 +19,7 @@
 	"include": [
 		"./lib/**/*.ts",
 		"./src/**/*.ts",
+		"./tests/**/*.ts"
 	],
 	"noEmit": true
 }
