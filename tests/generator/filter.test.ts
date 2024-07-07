@@ -1,5 +1,5 @@
 import test from "ava"
-import { filterNameSet } from "../../src/dictionary/filter"
+import { filterNameSet } from "../../src/filter"
 import { FERRIS_WHEEL, MERRY_GO_ROUND } from "../../src/enum/rideType"
 
 export const TEST_NAME_SET = [

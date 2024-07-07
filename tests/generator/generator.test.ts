@@ -38,16 +38,18 @@ test("generates a random name", (t) => {
 })
 
 test("generates a random name based on rideType", (t) => {
-	const keys = Object.keys(RideType).filter((key) => !isNumeric(key))
+	const keys = Object.keys(RideType).filter((key) => isNumeric(key))
 
 	for (let i = 0; i < keys.length; i++) {
-		if (keys[i].search("UNKNOWN") === 0) {
+		if (
+			SKIPPABLE_RIDE_TYPES.some(
+				(t) => t.toString() === keys[i].toString()
+			)
+		) {
 			continue
 		}
 
-		const name = generateName(
-			RideType[keys[i] as unknown as number] as unknown as RideType
-		)
+		const name = generateName(keys[i] as unknown as RideType)
 
 		t.is(typeof name, "string", keys[i])
 		t.not(name, "", keys[i])

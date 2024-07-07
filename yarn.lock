@@ -2675,6 +2675,11 @@ onetime@^6.0.0:
   dependencies:
     mimic-fn "^4.0.0"
 
+openrct2-flexui@^0.1.0-prerelease.0:
+  version "0.1.0-prerelease.0"
+  resolved "https://registry.yarnpkg.com/openrct2-flexui/-/openrct2-flexui-0.1.0-prerelease.0.tgz#2b3d95dd279c9bd551386d47eb312308776b755a"
+  integrity sha512-eJrCLJSua/J+Q5InJSGwGJKC+2PUc4a/RarJlFQqKtadhX6dk3qfgwL7SIzr0MMVdj6WS3Hboya2wHXHdKNvVA==
+
 openrct2-mocks@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/openrct2-mocks/-/openrct2-mocks-0.1.6.tgz#8f8f9291b63283035114930c4ea7a1b8c7c4308a"

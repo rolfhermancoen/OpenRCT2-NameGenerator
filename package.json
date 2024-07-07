@@ -1,6 +1,6 @@
 {
 	"name": "openrct2-name-generator",
-	"version": "0.1",
+	"version": "0.1.2",
 	"main": "app.js",
 	"license": "MIT",
 	"author": "rolfhermancoen",
@@ -52,5 +52,8 @@
 			"./tests/_setup.cjs"
 		],
 		"verbose": true
+	},
+	"dependencies": {
+		"openrct2-flexui": "^0.1.0-prerelease.0"
 	}
 }
