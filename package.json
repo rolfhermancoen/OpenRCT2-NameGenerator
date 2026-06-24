@@ -1,6 +1,6 @@
 {
 	"name": "openrct2-name-generator",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"main": "app.js",
 	"license": "MIT",
 	"author": "rolfhermancoen",
@@ -9,7 +9,6 @@
 		"start": "nodemon --watch ./src --ext js,ts --exec \"npm run build:dev\"",
 		"build": "rollup --config rollup.config.js --environment BUILD:production",
 		"build:dev": "rollup --config rollup.config.js",
-		"gettypes": "curl https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/distribution/openrct2.d.ts > lib/openrct2.d.ts",
 		"lint": "eslint",
 		"lint:fix": "eslint --fix",
 		"test": "nyc ava"
