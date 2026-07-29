@@ -17,15 +17,21 @@ const hasPremadeTrackDesignWindowOpen = () => {
 	return false
 }
 
-const getAllExistingRideNames = () => {
-	const rideNames = []
-	for (let i = 0; i <= map.numRides; i++) {
-		const ride = map.getRide(i)
-		if (ride) {
-			rideNames.push(ride.name)
+const MAX_NAME_ATTEMPTS = 100
+
+const getAllExistingRideNames = () => map.rides.map((ride) => ride.name)
+
+const generateUnusedName = (rideType: RideType): string | null => {
+	const existingNames = getAllExistingRideNames()
+
+	for (let attempt = 0; attempt < MAX_NAME_ATTEMPTS; attempt++) {
+		const name = generateName(rideType)
+
+		if (name !== "" && existingNames.every((n) => n !== name)) {
+			return name
 		}
 	}
-	return rideNames
+	return null
 }
 
 const setRideName = (rideType: RideType, ride: number) => {
@@ -33,15 +39,14 @@ const setRideName = (rideType: RideType, ride: number) => {
 		return
 	}
 
-	const existingNames = getAllExistingRideNames()
+	const foundName = generateUnusedName(rideType)
 
-	let foundName = null
-	while (!foundName) {
-		const name = generateName(rideType)
-
-		if (existingNames.every((n) => n !== name)) {
-			foundName = name
-		}
+	if (!foundName) {
+		console.log(
+			`[NameGenerator] No unique name found for rideId ${ride} ` +
+				`(rideType ${rideType}), leaving the default name.`
+		)
+		return
 	}
 
 	context.executeAction(

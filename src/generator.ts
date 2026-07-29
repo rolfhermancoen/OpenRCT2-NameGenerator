@@ -67,8 +67,16 @@ export const generateName = (
 		memoizeFilterNameSet(adjectives, "adjective", rideType, vehicleType),
 		EMPTY_CHANCE_CONFIG.adjective
 	)?.value
+	const matchingNouns = memoizeFilterNameSet(
+		nouns,
+		"noun",
+		rideType,
+		vehicleType
+	)
 	const noun = getRandomElement(
-		memoizeFilterNameSet(nouns, "noun", rideType, vehicleType)
+		matchingNouns.length > 0
+			? matchingNouns
+			: memoizeFilterNameSet(nouns, "noun")
 	)?.value
 	const suffix = getRandomElement(
 		memoizeFilterNameSet(suffixes, "suffix", rideType, vehicleType),
