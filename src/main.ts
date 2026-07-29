@@ -2,9 +2,14 @@ import { RideType } from "./enum/rideType"
 import { generateName } from "./generator"
 import { WindowClass } from "./enum/windowClass"
 import { mainWindow } from "./ui/mainWindow"
+import { getNamingOption } from "./settings"
 
 // GAME_COMMAND_FLAG_GHOST, see Game.h in OpenRCT2.
 const GAME_COMMAND_FLAG_GHOST = 1 << 6
+
+// RCT1 competition designs, released without their names: u(0010), u(Z005), and so on.
+// The game appends a number when the park already has a ride with that name.
+const RCT1_COMPETITION_NAME = /^u\([0-9A-Z]{4}\)( \d+)?$/i
 
 let pendingTrackDesignRide: { rideType: RideType; ride: number } | null = null
 
@@ -35,6 +40,29 @@ const getAllExistingRideNames = () => {
 		}
 	}
 	return rideNames
+}
+
+const shouldName = (ride: number, fromTrackDesign: boolean) => {
+	if (getNamingOption("everything")) {
+		return true
+	}
+
+	const placed = map.getRide(ride)
+	if (!placed) {
+		return false
+	}
+
+	if (placed.classification !== "ride") {
+		return getNamingOption("shopsAndStalls")
+	}
+
+	if (fromTrackDesign) {
+		return RCT1_COMPETITION_NAME.test(placed.name)
+			? getNamingOption("rct1Designs")
+			: getNamingOption("savedDesigns")
+	}
+
+	return getNamingOption("customDesigns")
 }
 
 const setRideName = (rideType: RideType, ride: number) => {
@@ -111,7 +139,9 @@ export function main() {
 					break
 				}
 
-				setRideName(rideType, ride)
+				if (shouldName(ride, false)) {
+					setRideName(rideType, ride)
+				}
 				break
 			}
 			case "trackdesign": {
@@ -122,7 +152,11 @@ export function main() {
 				const pending = pendingTrackDesignRide
 				pendingTrackDesignRide = null
 
-				if (pending && !event.result.error) {
+				if (
+					pending &&
+					!event.result.error &&
+					shouldName(pending.ride, true)
+				) {
 					setRideName(pending.rideType, pending.ride)
 				}
 				break
