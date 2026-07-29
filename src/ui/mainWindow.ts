@@ -13,7 +13,7 @@ export const mainWindow = window({
 			disabled: true
 		}),
 		label({
-			text: "version 0.1.1",
+			text: `version ${__PLUGIN_VERSION__}`,
 			alignment: "centred"
 		})
 	]

@@ -4,7 +4,7 @@ import { main } from "./main"
 
 registerPlugin({
 	name: "NameGenerator",
-	version: "0.1",
+	version: __PLUGIN_VERSION__,
 	authors: ["rolfhermancoen"],
 	type: "remote",
 	licence: "MIT",
