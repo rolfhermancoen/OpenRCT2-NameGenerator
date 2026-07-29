@@ -3,6 +3,15 @@ import { generateName } from "./generator"
 import { WindowClass } from "./enum/windowClass"
 import { mainWindow } from "./ui/mainWindow"
 
+// GAME_COMMAND_FLAG_GHOST, see Game.h in OpenRCT2.
+const GAME_COMMAND_FLAG_GHOST = 1 << 6
+
+let pendingTrackDesignRide: { rideType: RideType; ride: number } | null = null
+
+const isGhostAction = (args: object) =>
+	"flags" in args &&
+	((args as { flags: number }).flags & GAME_COMMAND_FLAG_GHOST) !== 0
+
 const hasPremadeTrackDesignWindowOpen = () => {
 	for (let index = 0; index < ui.windows; index++) {
 		const w = ui.getWindow(index)
@@ -29,10 +38,6 @@ const getAllExistingRideNames = () => {
 }
 
 const setRideName = (rideType: RideType, ride: number) => {
-	if (hasPremadeTrackDesignWindowOpen()) {
-		return
-	}
-
 	const existingNames = getAllExistingRideNames()
 
 	let foundName = null
@@ -90,11 +95,35 @@ export function main() {
 	context.subscribe("action.execute", (event) => {
 		switch (event.action) {
 			case "ridecreate": {
-				if ("rideType" in event.args && "ride" in event.result) {
-					setRideName(
-						event.args.rideType as RideType,
-						event.result.ride as number
-					)
+				if (!("rideType" in event.args) || !("ride" in event.result)) {
+					break
+				}
+
+				if (isGhostAction(event.args)) {
+					break
+				}
+
+				const rideType = event.args.rideType as RideType
+				const ride = event.result.ride as number
+
+				if (hasPremadeTrackDesignWindowOpen()) {
+					pendingTrackDesignRide = { rideType, ride }
+					break
+				}
+
+				setRideName(rideType, ride)
+				break
+			}
+			case "trackdesign": {
+				if (isGhostAction(event.args)) {
+					break
+				}
+
+				const pending = pendingTrackDesignRide
+				pendingTrackDesignRide = null
+
+				if (pending && !event.result.error) {
+					setRideName(pending.rideType, pending.ride)
 				}
 				break
 			}

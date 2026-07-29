@@ -12,6 +12,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"outDir": "out",
+		"skipLibCheck": true,
 		"strict": true,
 		"target": "es5",
 		"lib": [ "es5" ]
