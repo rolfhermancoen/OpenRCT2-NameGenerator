@@ -11,7 +11,10 @@ const SKIPPABLE_RIDE_TYPES = [
 	RideType.UNKNOWN_83,
 	RideType.UNKNOWN_84,
 	RideType.UNKNOWN_85,
-	RideType.UNKNOWN_89
+	RideType.UNKNOWN_89,
+	RideType.MULTI_DIMENSION_ROLLER_COASTER_ALT,
+	RideType.FLYING_ROLLER_COASTER_ALT,
+	RideType.LAY_DOWN_ROLLER_COASTER_ALT
 ]
 
 function isNumeric(value: string) {
@@ -35,6 +38,15 @@ test("generates a random name", (t) => {
 		t.is(typeof name, "string", keys[i])
 		t.not(name, "", keys[i])
 	}
+})
+
+test("generates a name for a ride type that is not in the dictionary", (t) => {
+	const unknownRideType = 255 as unknown as RideType
+
+	const name = generateName(unknownRideType)
+
+	t.is(typeof name, "string")
+	t.not(name, "")
 })
 
 test("generates a random name based on rideType", (t) => {
