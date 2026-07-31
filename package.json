@@ -13,7 +13,7 @@
 		"lint:fix": "eslint --fix",
 		"test": "nyc ava",
 		"release": "commit-and-tag-version",
-    	"release:dry": "commit-and-tag-version --dry-run"
+		"release:dry": "commit-and-tag-version --dry-run"
 	},
 	"devDependencies": {
 		"@ava/typescript": "4.0.0",
@@ -25,6 +25,7 @@
 		"@typescript-eslint/eslint-plugin": "^7.15.0",
 		"@typescript-eslint/parser": "^7.15.0",
 		"ava": "5.2.0",
+		"commit-and-tag-version": "^13.1.2",
 		"eslint": "^9.6.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.29.1",
