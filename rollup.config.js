@@ -2,6 +2,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 import { exec } from "child_process";
+import { readFileSync } from "fs";
 import { homedir } from "os";
 import { promisify } from "util";
 
@@ -17,7 +18,13 @@ const options =
 	 * Determines in what build mode the plugin should be build. The default here takes
 	 * from the environment (ex. CLI arguments) with "development" as fallback.
 	 */
-	build: process.env.BUILD || "development"
+	build: process.env.BUILD || "development",
+
+	/**
+	 * The version that is reported to the game and shown in the plugin window.
+	 * Taken from package.json so it only has to be bumped in one place.
+	 */
+	version: JSON.parse(readFileSync("./package.json", "utf8")).version
 };
 
 /**
@@ -66,7 +73,8 @@ const config = {
 	output: {
 		file: await getOutput(),
 		format: "iife",
-		compact: true
+		compact: true,
+		intro: `var __PLUGIN_VERSION__ = ${JSON.stringify(options.version)};`
 	},
 	treeshake: "smallest",
 	plugins: [

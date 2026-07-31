@@ -61,7 +61,6 @@ export default [
 			"no-unused-vars": "off",
 			semi: ["error", "never"],
 			"@typescript-eslint/no-inferrable-types": "off",
-			"@typescript-eslint/semi": ["error", "never"],
 			"@typescript-eslint/triple-slash-reference": "off",
 			"max-len": ["error", { code: 100, tabWidth: 4 }],
 			"constructor-super": 0,

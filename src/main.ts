@@ -2,6 +2,20 @@ import { RideType } from "./enum/rideType"
 import { generateName } from "./generator"
 import { WindowClass } from "./enum/windowClass"
 import { mainWindow } from "./ui/mainWindow"
+import { getNamingOption } from "./settings"
+
+// GAME_COMMAND_FLAG_GHOST, see Game.h in OpenRCT2.
+const GAME_COMMAND_FLAG_GHOST = 1 << 6
+
+// RCT1 competition designs, released without their names: u(0010), u(Z005), and so on.
+// The game appends a number when the park already has a ride with that name.
+const RCT1_COMPETITION_NAME = /^u\([0-9A-Z]{4}\)( \d+)?$/i
+
+let pendingTrackDesignRide: { rideType: RideType; ride: number } | null = null
+
+const isGhostAction = (args: object) =>
+	"flags" in args &&
+	((args as { flags: number }).flags & GAME_COMMAND_FLAG_GHOST) !== 0
 
 const hasPremadeTrackDesignWindowOpen = () => {
 	for (let index = 0; index < ui.windows; index++) {
@@ -34,11 +48,30 @@ const generateUnusedName = (rideType: RideType): string | null => {
 	return null
 }
 
-const setRideName = (rideType: RideType, ride: number) => {
-	if (hasPremadeTrackDesignWindowOpen()) {
-		return
+const shouldName = (ride: number, fromTrackDesign: boolean) => {
+	if (getNamingOption("everything")) {
+		return true
 	}
 
+	const placed = map.getRide(ride)
+	if (!placed) {
+		return false
+	}
+
+	if (placed.classification !== "ride") {
+		return getNamingOption("shopsAndStalls")
+	}
+
+	if (fromTrackDesign) {
+		return RCT1_COMPETITION_NAME.test(placed.name)
+			? getNamingOption("rct1Designs")
+			: getNamingOption("savedDesigns")
+	}
+
+	return getNamingOption("customDesigns")
+}
+
+const setRideName = (rideType: RideType, ride: number) => {
 	const foundName = generateUnusedName(rideType)
 
 	if (!foundName) {
@@ -95,11 +128,41 @@ export function main() {
 	context.subscribe("action.execute", (event) => {
 		switch (event.action) {
 			case "ridecreate": {
-				if ("rideType" in event.args && "ride" in event.result) {
-					setRideName(
-						event.args.rideType as RideType,
-						event.result.ride as number
-					)
+				if (!("rideType" in event.args) || !("ride" in event.result)) {
+					break
+				}
+
+				if (isGhostAction(event.args)) {
+					break
+				}
+
+				const rideType = event.args.rideType as RideType
+				const ride = event.result.ride as number
+
+				if (hasPremadeTrackDesignWindowOpen()) {
+					pendingTrackDesignRide = { rideType, ride }
+					break
+				}
+
+				if (shouldName(ride, false)) {
+					setRideName(rideType, ride)
+				}
+				break
+			}
+			case "trackdesign": {
+				if (isGhostAction(event.args)) {
+					break
+				}
+
+				const pending = pendingTrackDesignRide
+				pendingTrackDesignRide = null
+
+				if (
+					pending &&
+					!event.result.error &&
+					shouldName(pending.ride, true)
+				) {
+					setRideName(pending.rideType, pending.ride)
 				}
 				break
 			}
