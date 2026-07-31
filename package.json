@@ -1,6 +1,6 @@
 {
 	"name": "openrct2-name-generator",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"main": "app.js",
 	"license": "MIT",
 	"author": "rolfhermancoen",
