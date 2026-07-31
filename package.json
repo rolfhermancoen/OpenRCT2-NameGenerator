@@ -35,7 +35,7 @@
 		"nyc": "15.1.0",
 		"openrct2-mocks": "^0.1.6",
 		"prettier": "^3.3.2",
-		"rollup": "^3.15.0",
+		"rollup": "^3.29.5",
 		"tslib": "^2.5.0",
 		"tsx": "3.12.6",
 		"typescript": "^5.5.3"
