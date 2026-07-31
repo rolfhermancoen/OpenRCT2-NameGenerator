@@ -1,0 +1,87 @@
+name: Release
+
+# Automatic releases only ever bump patch (fix:/perf: only) or minor (any feat:
+# since the last tag). A recommended "major" (breaking change commit) is
+# deliberately capped down to minor here - a real major bump only ever happens
+# via the manual workflow_dispatch input below.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Force a release type (bypasses automatic detection)
+        required: true
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Determine release type
+        id: bump
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ inputs.bump }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          range="HEAD"
+          [ -n "$last_tag" ] && range="$last_tag..HEAD"
+          commits=$(git log "$range" --pretty=%s)
+          echo "commits since $([ -n "$last_tag" ] && echo "$last_tag" || echo "the beginning"):"
+          echo "$commits"
+
+          if echo "$commits" | grep -qE '^[a-zA-Z]+(\([^)]*\))?!:' || echo "$(git log "$range" --pretty=%B)" | grep -q 'BREAKING CHANGE'; then
+            echo "breaking change detected - capping automatic release to minor (major requires a manual workflow_dispatch run)"
+            type=minor
+          elif echo "$commits" | grep -qE '^feat(\([^)]*\))?:'; then
+            type=minor
+          elif echo "$commits" | grep -qE '^(fix|perf|build)(\([^)]*\))?:'; then
+            type=patch
+          else
+            echo "no fix/feat/perf commits since last tag - nothing to release"
+            type=none
+          fi
+
+          echo "type=$type" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git identity
+        if: steps.bump.outputs.type != 'none'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version, update changelog, tag
+        if: steps.bump.outputs.type != 'none'
+        run: yarn release --release-as ${{ steps.bump.outputs.type }}
+
+      - name: Push
+        if: steps.bump.outputs.type != 'none'
+        run: git push --follow-tags origin main
+
+      - name: Create GitHub Release
+        if: steps.bump.outputs.type != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          awk '/^## /{n++} n==1' CHANGELOG.md > release-notes.md
+          gh release create "v$version" --title "v$version" --notes-file release-notes.md
